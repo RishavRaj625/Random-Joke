@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Joke Generator</title>
+</head>
+<style>
+    /* Basic styling */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        background-color: #f0f0f0;
+        background-color: #171414;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .container {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        max-width: 400px;
+        text-align: center;
+        width: 100%;
+    }
+
+    h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .category {
+        margin-bottom: 20px;
+    }
+
+    button {
+        background-color: #6200ea;
+        border: none;
+        color: white;
+        padding: 10px 15px;
+        margin: 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #3700b3;
+    }
+
+    #jokeContainer {
+        margin-top: 20px;
+        background-color: #f9f9f9;
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+    }
+
+    .punchline {
+        font-size: 18px;
+        font-style: italic;
+        margin-top: 10px;
+    }
+
+    .emoji {
+        font-size: 28px;
+        margin-top: 15px;
+    }
+
+    /* Loader animation */
+    .loader {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Responsive Design */
+    @media screen and (max-width: 600px) {
+        .container {
+            padding: 15px;
+            max-width: 100%;
+        }
+
+        h1 {
+            font-size: 20px;
+        }
+
+        button {
+            padding: 8px 10px;
+        }
+
+        .punchline {
+            font-size: 16px;
+        }
+
+        .emoji {
+            font-size: 24px;
+        }
+    }
+</style>
+
+<body>
+    <div class="container">
+        <h1>Get a Random Joke!</h1>
+        <p>Select a category and a language:</p>
+
+        <!-- Language Mode Selection -->
+        <div class="language-toggle">
+            <button onclick="setLanguage('english')">English</button>
+            <button onclick="setLanguage('hindi')">हिन्दी</button>
+        </div>
+
+        <!-- Category Selection -->
+        <div class="category">
+            <button onclick="getJoke('funny')">Funny</button>
+            <button onclick="getJoke('romantic')">Romantic</button>
+            <button onclick="getJoke('emotional')">Emotional</button>
+            <button onclick="getJoke('life')">Life Lesson</button>
+            <button onclick="getJoke('dad')">Dad Joke</button>
+        </div>
+
+        <!-- Loader -->
+        <div id="loader" class="loader" style="display:none;"></div>
+
+        <!-- Joke Display -->
+        <div id="jokeContainer">
+            <p id="jokeSetup">Click on a category to get a joke!</p>
+            <p id="jokePunchline" class="punchline"></p>
+            <p id="emojiReaction" class="emoji"></p>
+        </div>
+    </div>
+
+    <script>
+        // API URLs for English jokes
+        const apiUrls = {
+            funny: 'https://official-joke-api.appspot.com/random_joke',
+            romantic: 'https://official-joke-api.appspot.com/jokes/programming/random',
+            emotional: 'https://official-joke-api.appspot.com/random_joke',
+            life: 'https://official-joke-api.appspot.com/random_joke',
+            dad: 'https://icanhazdadjoke.com/',
+        };
+
+        // Hindi jokes (since API availability for Hindi is limited)
+        const hindiJokes = {
+            funny: [
+                { setup: "पति: सुनो, शादी के बाद तुम खाना बनाना सिखोगी?", punchline: "पत्नी: क्यों, क्या तुम्हारी शादी की दावत में कम खाना बना था?" },
+                { setup: "बीवी: सुनो जी, मेरी कोई बात बुरी लगे तो बता देना...", punchline: "पति: अभी बता दूं या फिर बाद में दोनों को एक साथ बताऊं?" },
+                { setup: "टीचर: बताओ, अंग्रेजी में सोने से पहले क्या कहते हैं?", punchline: "बच्चा: एसी बंद कर दो, मच्छर आ रहे हैं।" }
+            ],
+            romantic: [
+                { setup: "वो लड़की बड़ी चुलबुली थी...", punchline: "मगर उसने मुझसे कभी सीरियसली प्यार नहीं किया।" },
+                { setup: "तुम्हारी मुस्कान का असर तो देखो...", punchline: "लोग कहते हैं दिल टूट गया!" }
+            ],
+            emotional: [
+                { setup: "ज़िन्दगी में अगर किसी ने ठुकरा दिया तो...", punchline: "समझ लेना कि उसे आपकी क़ीमत समझ नहीं आई।" },
+                { setup: "कभी किसी का दिल न दुखाना...", punchline: "क्योंकि दिल टूटने पर आवाज़ नहीं होती पर दर्द बहुत होता है।" }
+            ],
+            life: [
+                { setup: "ज़िन्दगी में दो ही चीजें मायने रखती हैं...", punchline: "एक ईमानदारी और दूसरी मेहनत।" },
+                { setup: "सफलता उन्हीं को मिलती है...", punchline: "जो अपनी क़ाबिलियत पर यकीन रखते हैं।" }
+            ]
+        };
+        
+
+        // Emoji reactions based on the joke category
+        const emojiReactions = {
+            funny: '😂',
+            romantic: '❤️',
+            emotional: '😢',
+            life: '💡',
+            dad: '😅',
+        };
+
+        // Track selected language
+        let selectedLanguage = 'english';
+
+        // Set the language
+        function setLanguage(language) {
+            selectedLanguage = language;
+            document.getElementById('jokeSetup').innerText = `You have selected ${language === 'english' ? 'English' : 'हिन्दी'} mode. Click on a category to get a joke!`;
+            document.getElementById('jokePunchline').innerText = '';
+            document.getElementById('emojiReaction').innerText = '';
+        }
+
+        // Function to fetch jokes based on category and language
+        function getJoke(category) {
+            if (selectedLanguage === 'english') {
+                fetchEnglishJoke(category);
+            } else if (selectedLanguage === 'hindi') {
+                fetchHindiJoke(category);
+            }
+        }
+
+        // Fetch English joke from API
+        function fetchEnglishJoke(category) {
+            let apiUrl = apiUrls[category] || apiUrls['funny'];
+
+            // Show loader while fetching the joke
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('jokeSetup').innerText = '';
+            document.getElementById('jokePunchline').innerText = '';
+            document.getElementById('emojiReaction').innerText = '';
+
+            fetch(apiUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('loader').style.display = 'none';
+
+                    let setup = data.setup || data.joke;
+                    let punchline = data.punchline || '';
+                    let emoji = emojiReactions[category] || '🙂';
+
+                    // Display the setup
+                    document.getElementById('jokeSetup').innerText = setup;
+
+                    // Display the punchline after a delay
+                    setTimeout(() => {
+                        document.getElementById('jokePunchline').innerText = punchline;
+                        document.getElementById('emojiReaction').innerText = emoji;
+                    }, 1500);
+                })
+                .catch(error => {
+                    console.error('Error fetching joke:', error);
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('jokeSetup').innerText = 'Oops! Something went wrong. Here\'s a fallback joke:';
+                    document.getElementById('jokePunchline').innerText = 'Why don’t skeletons fight each other? They don’t have the guts.';
+                    document.getElementById('emojiReaction').innerText = '💀';
+                });
+        }
+
+        // Fetch Hindi joke from the local array
+        function fetchHindiJoke(category) {
+            let jokes = hindiJokes[category] || hindiJokes['funny'];
+            let randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
+
+            // Show loader
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('jokeSetup').innerText = '';
+            document.getElementById('jokePunchline').innerText = '';
+            document.getElementById('emojiReaction').innerText = '';
+
+            // Simulate loading delay for Hindi jokes
+            setTimeout(() => {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('jokeSetup').innerText = randomJoke.setup;
+                document.getElementById('jokePunchline').innerText = randomJoke.punchline;
+                document.getElementById('emojiReaction').innerText = emojiReactions[category] || '🙂';
+            }, 1500);
+        }
+
+    </script>
+</body>
+
+</html>
